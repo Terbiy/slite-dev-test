@@ -1,7 +1,6 @@
 const net = require('net')
 
-const HOST = 'localhost'
-const PORT = 1337
+const { host, port } = require('./config.json')
 
 function generateDocId() {
   return `doc${Math.floor(Math.random() * 1000)}`
@@ -10,7 +9,7 @@ function generateDocId() {
 function runCommand(command) {
   return new Promise((resolve) => {
     const client = new net.Socket()
-    client.connect(PORT, HOST, function () {
+    client.connect(port, host, function () {
       client.on('data', function (data) {
         resolve(data.toString('utf8'))
         client.end()
