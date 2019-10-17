@@ -19,5 +19,41 @@
   "license": "ISC",
   "dependencies": {
     "jest": "^23.1.0"
+  },
+  "devDependencies": {
+    "@pob/eslint-config": "^32.1.0",
+    "@pob/eslint-config-node": "^32.1.0",
+    "eslint": "^6.5.1",
+    "eslint-config-prettier": "^6.4.0",
+    "husky": "^3.0.9",
+    "lint-staged": "^9.4.2",
+    "prettier": "1.18.2"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
+  "eslintConfig": {
+    "extends": [
+      "@pob/eslint-config",
+      "@pob/eslint-config-node",
+      "prettier"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{json,md}": [
+      "prettier --write",
+      "git add"
+    ],
+    "./src/*.js": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ]
   }
 }
