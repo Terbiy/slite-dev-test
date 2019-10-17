@@ -38,6 +38,11 @@
       "@pob/eslint-config",
       "@pob/eslint-config-node",
       "prettier"
+    ],
+    "overrides": [
+      {
+        "files": "./src/**.js"
+      }
     ]
   },
   "husky": {
@@ -50,7 +55,7 @@
       "prettier --write",
       "git add"
     ],
-    "./src/*.js": [
+    "./src/**.js": [
       "eslint --fix",
       "prettier --write",
       "git add"
