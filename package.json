@@ -41,7 +41,15 @@
     ],
     "overrides": [
       {
-        "files": "./src/**.js"
+        "files": "./src/**.js",
+        "rules": {
+          "no-use-before-define": [
+            "error",
+            {
+              "functions": false
+            }
+          ]
+        }
       }
     ]
   },
