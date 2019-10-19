@@ -1,4 +1,8 @@
 {
   "host": "localhost",
-  "port": 1337
+  "port": 1337,
+  "queriesSettings": {
+    "separator": ":",
+    "defaultContentType": "txt"
+  }
 }

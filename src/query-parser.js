@@ -1,5 +1,10 @@
 'use strict'
 
+const {
+  separator,
+  defaultContentType
+} = require('../config.json').queriesSettings
+
 module.exports = {
   parseCommand,
   parseCreation,
@@ -14,11 +19,11 @@ function parseCommand(query) {
   return command
 }
 
-function parseCreation(query = '') {
+function parseCreation(query) {
   return extractId(query)
 }
 
-function parseInsertion(query = '') {
+function parseInsertion(query) {
   const [, id = '', positionOrText = '', textCandidate = ''] = decomposeQuery(
     query
   )
@@ -41,12 +46,12 @@ function parseInsertion(query = '') {
   }
 }
 
-function parseDeletion(query = '') {
+function parseDeletion(query) {
   return extractId(query)
 }
 
-function parseGetting(query = '') {
-  const [, id = '', contentType = 'txt'] = decomposeQuery(query)
+function parseGetting(query) {
+  const [, id = '', contentType = defaultContentType] = decomposeQuery(query)
 
   return {
     id,
@@ -63,7 +68,7 @@ function extractId(query) {
 }
 
 function decomposeQuery(query = '') {
-  return removeLastLineBreak(query).split(':')
+  return removeLastLineBreak(query).split(separator)
 }
 
 function removeLastLineBreak(query) {
