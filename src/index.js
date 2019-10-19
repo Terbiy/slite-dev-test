@@ -1,8 +1,14 @@
 'use strict'
 
-// Your code goes here
 const net = require('net')
 const { host, port } = require('../config.json')
+const {
+  parseCommand,
+  parseCreation,
+  parseInsertion,
+  parseDeletion,
+  parseGetting
+} = require('./query-parser.js')
 
 const server = net.createServer(connection => {
   connection.setEncoding('utf8')
@@ -10,7 +16,6 @@ const server = net.createServer(connection => {
   connection.on('data', query => {
     const response = handleIncommingQuery(query)
 
-    console.log(response)
     connection.write(response)
     connection.write('\r\n')
   })
@@ -31,27 +36,37 @@ function handleIncommingQuery(query) {
       get
     }[command] || (() => `No command ${command} found.`)
 
-  return handle()
+  return handle(query)
 }
 
 function create(query) {
+  const settings = parseCreation(query)
+
+  console.log(query, settings)
+
   return 'creating'
 }
 
 function insert(query) {
+  const settings = parseInsertion(query)
+
+  console.log(query, settings)
+
   return 'inserting'
 }
 
 function deleteDocument(query) {
+  const settings = parseDeletion(query)
+
+  console.log(query, settings)
+
   return 'deleting'
 }
 
 function get(query) {
+  const settings = parseGetting(query)
+
+  console.log(query, settings)
+
   return 'getting'
-}
-
-function parseCommand(query) {
-  const [command = ''] = query.split(':')
-
-  return command
 }
