@@ -9,7 +9,7 @@ module.exports = {
   parseCommand,
   parseCreation,
   parseInsertion,
-  parseDeletion,
+  parseRemovement,
   parseGetting
 }
 
@@ -46,7 +46,7 @@ function parseInsertion(query) {
   }
 }
 
-function parseDeletion(query) {
+function parseRemovement(query) {
   return extractId(query)
 }
 

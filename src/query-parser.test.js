@@ -8,7 +8,7 @@ const {
   parseCommand,
   parseCreation,
   parseInsertion,
-  parseDeletion,
+  parseRemovement,
   parseGetting
 } = require('./query-parser.js')
 
@@ -123,7 +123,7 @@ describe('Query Parser tests', () => {
       const ID = 'bad'
 
       ;[undefined, '', 'hi!', buildQuery('delete', ID)].forEach(query => {
-        expect(parseDeletion(query)).toEqual(parseCreation(query))
+        expect(parseRemovement(query)).toEqual(parseCreation(query))
       })
     })
   })

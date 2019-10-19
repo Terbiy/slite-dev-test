@@ -6,7 +6,7 @@ const {
   parseCommand,
   parseCreation,
   parseInsertion,
-  parseDeletion,
+  parseRemovement,
   parseGetting
 } = require('./query-parser.js')
 
@@ -32,7 +32,7 @@ function handleIncommingQuery(query) {
     {
       create,
       insert,
-      delete: deleteDocument,
+      remove,
       get
     }[command] || (() => `No command ${command} found.`)
 
@@ -55,12 +55,12 @@ function insert(query) {
   return 'inserting'
 }
 
-function deleteDocument(query) {
-  const settings = parseDeletion(query)
+function remove(query) {
+  const settings = parseRemovement(query)
 
   console.log(query, settings)
 
-  return 'deleting'
+  return 'removing'
 }
 
 function get(query) {
