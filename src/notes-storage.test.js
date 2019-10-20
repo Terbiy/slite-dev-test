@@ -1,5 +1,6 @@
 'use strict'
 
+const { availableContentTypes } = require('../config.json').queriesSettings
 const notesStorage = require('./notes-storage.js')
 const httpCodes = require('./http-codes.json')
 
@@ -39,6 +40,60 @@ describe('Notes Storage tests', () => {
       ).rejects.toEqual({
         responseCode: httpCodes.locked
       })
+    })
+
+    afterAll(() => {
+      notesStorage.clear()
+    })
+  })
+
+  describe('Getting notes', () => {
+    const ID = 'test234'
+    const noteResponse = {
+      responseCode: httpCodes.ok,
+      note: {
+        id: ID,
+        text: ''
+      }
+    }
+
+    beforeAll(() => {
+      return notesStorage.create({
+        id: ID
+      })
+    })
+
+    it('Should return existing note requested by id', () => {
+      return expect(
+        notesStorage.get({
+          id: ID,
+          contentType: availableContentTypes.txt
+        })
+      ).resolves.toEqual(noteResponse)
+    })
+
+    it('Should stick to default content type when unavailable is provided', () => {
+      return expect(notesStorage.get({ id: ID })).resolves.toEqual(noteResponse)
+    })
+
+    it('Should reject returning note when no id is provided', () => {
+      return expect(
+        notesStorage.get({ contentType: availableContentTypes.txt })
+      ).rejects.toEqual({
+        responseCode: httpCodes.notAcceptable
+      })
+    })
+
+    it('Should reject returning note when non-existing id is provided', () => {
+      return expect(
+        notesStorage.get({ id: '123', contentType: availableContentTypes.txt })
+      ).rejects.toEqual({
+        responseCode: httpCodes.notFound
+      })
+    })
+
+    afterAll(() => {
+      notesStorage.clear()
     })
   })
 })

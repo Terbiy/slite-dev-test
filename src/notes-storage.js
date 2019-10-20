@@ -6,7 +6,8 @@ module.exports = {
   create,
   insert,
   remove,
-  get
+  get,
+  clear
 }
 
 /**
@@ -41,7 +42,28 @@ function insert() {}
 
 function remove() {}
 
-function get() {}
+function get({ id, contentType } = {}) {
+  return new Promise((resolve, reject) => {
+    if (!id) {
+      reject(buildError(httpCodes.notAcceptable))
+    }
+
+    if (!storage.has(id)) {
+      reject(buildError(httpCodes.notFound))
+    }
+
+    const note = storage.get(id)
+
+    resolve({
+      responseCode: httpCodes.ok,
+      note
+    })
+  })
+}
+
+function clear() {
+  storage.clear()
+}
 
 function buildNote(id) {
   return {
