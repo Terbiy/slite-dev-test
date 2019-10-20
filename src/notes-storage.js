@@ -38,7 +38,31 @@ function create({ id } = {}) {
   })
 }
 
-function insert() {}
+function insert({ id, position = Number.MAX_SAFE_INTEGER, text } = {}) {
+  return new Promise((resolve, reject) => {
+    if (!(id && text)) {
+      reject(buildError(httpCodes.notAcceptable))
+    }
+
+    if (!storage.has(id)) {
+      reject(buildError(httpCodes.notFound))
+    }
+
+    const note = storage.get(id)
+    const { text: originalText } = note
+
+    const relevantPosition = Math.min(position, originalText.length)
+
+    note.text =
+      originalText.slice(0, relevantPosition) +
+      text +
+      originalText.slice(relevantPosition)
+
+    resolve({
+      responseCode: httpCodes.ok
+    })
+  })
+}
 
 function remove({ id } = {}) {
   return new Promise((resolve, reject) => {

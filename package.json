@@ -58,6 +58,10 @@
             {
               "functions": false
             }
+          ],
+          "max-lines": [
+            "error",
+            300
           ]
         }
       }

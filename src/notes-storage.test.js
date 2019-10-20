@@ -47,6 +47,121 @@ describe('Notes Storage tests', () => {
     })
   })
 
+  describe('Inserting text into notes', () => {
+    const TEXT = 'Hello, World!'
+    const ID = 'insert123'
+    const NOTE_DATA = {
+      id: ID
+    }
+
+    beforeEach(() => {
+      return notesStorage.create(NOTE_DATA)
+    })
+
+    afterEach(() => {
+      return notesStorage.remove(NOTE_DATA)
+    })
+
+    it('Should set the text for the fresh note', () => {
+      return notesStorage
+        .insert({
+          id: ID,
+          position: 0,
+          text: TEXT
+        })
+        .then(() => notesStorage.get(NOTE_DATA))
+        .then(({ note }) => {
+          expect(note.text).toBe(TEXT)
+        })
+    })
+
+    it('Should add the text at the end when no position is provided', () => {
+      const INSERTION_DATA = {
+        id: ID,
+        text: TEXT
+      }
+
+      return insertTwice(INSERTION_DATA)
+    })
+
+    it('Should add the text at the end when provided position is greater than text length', () => {
+      const INSERTION_DATA = {
+        id: ID,
+        position: 10000,
+        text: TEXT
+      }
+
+      return insertTwice(INSERTION_DATA)
+    })
+
+    function insertTwice(insertionData) {
+      return notesStorage
+        .insert(insertionData)
+        .then(() => notesStorage.insert(insertionData))
+        .then(() => notesStorage.get(NOTE_DATA))
+        .then(({ note }) => {
+          expect(note.text).toBe(TEXT + TEXT)
+        })
+    }
+
+    it('Should add text in the middle thus shifting its end', () => {
+      return notesStorage
+        .insert({
+          id: ID,
+          text: 'some text'
+        })
+        .then(() =>
+          notesStorage.insert({
+            id: ID,
+            position: 4,
+            text: ' more'
+          })
+        )
+        .then(() =>
+          notesStorage.get({
+            id: ID
+          })
+        )
+        .then(({ note }) => {
+          expect(note.text).toBe('some more text')
+        })
+    })
+
+    it('Should reject insertion when no id is provided', () => {
+      return expect(
+        notesStorage.insert({
+          position: 12,
+          text: 'let us bring the party!'
+        })
+      ).rejects.toEqual({
+        responseCode: httpCodes.notAcceptable
+      })
+    })
+
+    it('Should reject insertion when no text is provided', () => {
+      return expect(
+        notesStorage.insert({
+          id: ID,
+          position: 11
+        })
+      ).rejects.toEqual({
+        responseCode: httpCodes.notAcceptable
+      })
+    })
+
+    it('Should reject insertion when wrong id is provided', () => {
+      return expect(
+        notesStorage.insert({
+          id: 'no such id',
+          position: 0,
+          text: 'no party!'
+        })
+      ).rejects.toEqual({
+        responseCode: httpCodes.notFound
+      })
+    })
+  })
+
   describe('Deleting notes', () => {
     it('Should return no note after deleting', () => {
       const NOTE_DATA = { id: 'delete123' }
