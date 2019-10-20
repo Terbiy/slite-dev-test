@@ -47,6 +47,32 @@ describe('Notes Storage tests', () => {
     })
   })
 
+  describe('Deleting notes', () => {
+    it('Should return no note after deleting', () => {
+      const NOTE_DATA = { id: 'delete123' }
+
+      return expect(
+        notesStorage
+          .create(NOTE_DATA)
+          .then(() => notesStorage.remove(NOTE_DATA))
+      ).resolves.toEqual({
+        responseCode: httpCodes.ok
+      })
+    })
+
+    it('Should reject deleting when no id is provided', () => {
+      return expect(notesStorage.remove()).rejects.toEqual({
+        responseCode: httpCodes.notAcceptable
+      })
+    })
+
+    it('Should reject deleting when non-existing id is provided', () => {
+      return expect(notesStorage.remove({ id: '123' })).rejects.toEqual({
+        responseCode: httpCodes.notFound
+      })
+    })
+  })
+
   describe('Getting notes', () => {
     const ID = 'test234'
     const noteResponse = {
@@ -94,32 +120,6 @@ describe('Notes Storage tests', () => {
 
     afterAll(() => {
       notesStorage.clear()
-    })
-  })
-
-  describe('Deleting notes', () => {
-    it('Should return no note after deleting', () => {
-      const NOTE_DATA = { id: 'delete123' }
-
-      return expect(
-        notesStorage
-          .create(NOTE_DATA)
-          .then(() => notesStorage.remove(NOTE_DATA))
-      ).resolves.toEqual({
-        responseCode: httpCodes.ok
-      })
-    })
-
-    it('Should reject deleting when no id is provided', () => {
-      return expect(notesStorage.remove()).rejects.toEqual({
-        responseCode: httpCodes.notAcceptable
-      })
-    })
-
-    it('Should reject deleting when non-existing id is provided', () => {
-      return expect(notesStorage.remove({ id: '123' })).rejects.toEqual({
-        responseCode: httpCodes.notFound
-      })
     })
   })
 })
