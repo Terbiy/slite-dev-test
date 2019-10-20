@@ -40,7 +40,23 @@ function create({ id } = {}) {
 
 function insert() {}
 
-function remove() {}
+function remove({ id } = {}) {
+  return new Promise((resolve, reject) => {
+    if (!id) {
+      reject(buildError(httpCodes.notAcceptable))
+    }
+
+    if (!storage.has(id)) {
+      reject(buildError(httpCodes.notFound))
+    }
+
+    storage.delete(id)
+
+    resolve({
+      responseCode: httpCodes.ok
+    })
+  })
+}
 
 function get({ id, contentType } = {}) {
   return new Promise((resolve, reject) => {
