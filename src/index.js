@@ -9,18 +9,20 @@ const {
   parseRemovement,
   parseGetting
 } = require('./query-parser.js')
+const notesStorage = require('./notes-storage.js')
+const httpCodes = require('./http-codes.json')
 
 const server = net.createServer(connection => {
   connection.setEncoding('utf8')
 
+  const writeResponseValueOrCode = setConnectionAndWriteResponseValueOrCode(
+    connection
+  )
   connection.on('data', query => {
-    const response = handleIncommingQuery(query)
-
-    connection.write(response)
-    connection.write('\r\n')
+    handleIncommingQuery(query)
+      .then(writeResponseValueOrCode)
+      .catch(writeResponseValueOrCode)
   })
-
-  connection.pipe(connection)
 })
 
 server.listen(port, host)
@@ -32,9 +34,10 @@ function handleIncommingQuery(query) {
     {
       create,
       insert,
-      remove,
+      delete: remove,
       get
-    }[command] || (() => `No command ${command} found.`)
+    }[command] ||
+    (() => Promise.reject({ responseCode: httpCodes.methodNotAllowed }))
 
   return handle(query)
 }
@@ -42,31 +45,33 @@ function handleIncommingQuery(query) {
 function create(query) {
   const settings = parseCreation(query)
 
-  console.log(query, settings)
-
-  return 'creating'
+  return notesStorage.create(settings)
 }
 
 function insert(query) {
   const settings = parseInsertion(query)
 
-  console.log(query, settings)
-
-  return 'inserting'
+  return notesStorage.insert(settings)
 }
 
 function remove(query) {
   const settings = parseRemovement(query)
 
-  console.log(query, settings)
-
-  return 'removing'
+  return notesStorage.remove(settings)
 }
 
 function get(query) {
   const settings = parseGetting(query)
 
-  console.log(query, settings)
+  return notesStorage.get(settings).then(response => {
+    return {
+      responseValue: response.note.text
+    }
+  })
+}
 
-  return 'getting'
+function setConnectionAndWriteResponseValueOrCode(connection) {
+  return function({ responseValue, responseCode }) {
+    connection.write(`${responseCode || responseValue}\r\n`)
+  }
 }

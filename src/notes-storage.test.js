@@ -28,22 +28,8 @@ describe('Notes Storage tests', () => {
       })
     })
 
-    it('Should reject creating note when the required id is occupied', () => {
-      const NOTE_DATA = {
-        id: 'test123'
-      }
-
-      return expect(
-        notesStorage
-          .create(NOTE_DATA)
-          .then(() => notesStorage.create(NOTE_DATA))
-      ).rejects.toEqual({
-        responseCode: httpCodes.locked
-      })
-    })
-
     afterAll(() => {
-      notesStorage.clear()
+      return notesStorage.clear()
     })
   })
 
@@ -234,7 +220,7 @@ describe('Notes Storage tests', () => {
     })
 
     afterAll(() => {
-      notesStorage.clear()
+      return notesStorage.clear()
     })
   })
 })

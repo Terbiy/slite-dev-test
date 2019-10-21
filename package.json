@@ -62,7 +62,8 @@
           "max-lines": [
             "error",
             300
-          ]
+          ],
+          "prefer-promise-reject-errors": "off"
         }
       }
     ],

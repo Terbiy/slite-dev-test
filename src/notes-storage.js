@@ -20,11 +20,7 @@ const storage = new Map()
 function create({ id } = {}) {
   return new Promise((resolve, reject) => {
     if (!id) {
-      reject(buildError(httpCodes.notAcceptable))
-    }
-
-    if (storage.has(id)) {
-      reject(buildError(httpCodes.locked))
+      return reject(buildError(httpCodes.notAcceptable))
     }
 
     const note = buildNote(id)
@@ -41,11 +37,11 @@ function create({ id } = {}) {
 function insert({ id, position = Number.MAX_SAFE_INTEGER, text } = {}) {
   return new Promise((resolve, reject) => {
     if (!(id && text)) {
-      reject(buildError(httpCodes.notAcceptable))
+      return reject(buildError(httpCodes.notAcceptable))
     }
 
     if (!storage.has(id)) {
-      reject(buildError(httpCodes.notFound))
+      return reject(buildError(httpCodes.notFound))
     }
 
     const note = storage.get(id)
@@ -67,11 +63,11 @@ function insert({ id, position = Number.MAX_SAFE_INTEGER, text } = {}) {
 function remove({ id } = {}) {
   return new Promise((resolve, reject) => {
     if (!id) {
-      reject(buildError(httpCodes.notAcceptable))
+      return reject(buildError(httpCodes.notAcceptable))
     }
 
     if (!storage.has(id)) {
-      reject(buildError(httpCodes.notFound))
+      return reject(buildError(httpCodes.notFound))
     }
 
     storage.delete(id)
@@ -85,11 +81,11 @@ function remove({ id } = {}) {
 function get({ id, contentType } = {}) {
   return new Promise((resolve, reject) => {
     if (!id) {
-      reject(buildError(httpCodes.notAcceptable))
+      return reject(buildError(httpCodes.notAcceptable))
     }
 
     if (!storage.has(id)) {
-      reject(buildError(httpCodes.notFound))
+      return reject(buildError(httpCodes.notFound))
     }
 
     const note = storage.get(id)
@@ -102,7 +98,11 @@ function get({ id, contentType } = {}) {
 }
 
 function clear() {
-  storage.clear()
+  return new Promise(resolve => {
+    storage.clear()
+
+    resolve()
+  })
 }
 
 function buildNote(id) {
