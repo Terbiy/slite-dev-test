@@ -63,7 +63,14 @@
             "error",
             300
           ],
-          "prefer-promise-reject-errors": "off"
+          "prefer-promise-reject-errors": "off",
+          "no-prototype-builtins": "off"
+        }
+      },
+      {
+        "files": "./src/**.test.js",
+        "rules": {
+          "max-lines": "off"
         }
       }
     ],

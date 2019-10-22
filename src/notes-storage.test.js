@@ -1,6 +1,9 @@
 'use strict'
 
-const { availableContentTypes } = require('../config.json').notesSettings
+const {
+  availableContentTypes,
+  availableStyles
+} = require('../config.json').notesSettings
 const notesStorage = require('./notes-storage.js')
 const httpCodes = require('./http-codes.json')
 
@@ -216,6 +219,91 @@ describe('Notes Storage tests', () => {
         notesStorage.get({ id: '123', contentType: availableContentTypes.txt })
       ).rejects.toEqual({
         responseCode: httpCodes.notFound
+      })
+    })
+
+    afterAll(() => {
+      return notesStorage.clear()
+    })
+  })
+
+  describe('Formatting notes', () => {
+    const ID = 'some id'
+
+    beforeAll(() => {
+      notesStorage
+        .create({
+          id: ID
+        })
+        .then(() =>
+          notesStorage.insert({
+            id: ID,
+            text: 'Here is some text I need to type to implement the test'
+          })
+        )
+    })
+
+    it('Should return 200 code when existing note is formatting with proper arguments', () => {
+      return expect(
+        notesStorage.format({
+          id: ID,
+          start: 1,
+          end: 11,
+          style: availableStyles.bold
+        })
+      ).resolves.toEqual({
+        responseCode: httpCodes.ok
+      })
+    })
+
+    it('Should reject formatting node when no id is provided', () => {
+      return expect(
+        notesStorage.format({
+          start: 4,
+          end: 8,
+          style: availableStyles.italic
+        })
+      ).rejects.toEqual({
+        responseCode: httpCodes.notAcceptable
+      })
+    })
+
+    it('Should reject formatting when the note with provided id is not found', () => {
+      return expect(
+        notesStorage.format({
+          id: 'no such id is present',
+          start: 5,
+          end: 77,
+          style: availableStyles.bold
+        })
+      ).rejects.toEqual({
+        responseCode: httpCodes.notFound
+      })
+    })
+
+    it('Should reject formatting when wrong style is provided', () => {
+      return expect(
+        notesStorage.format({
+          id: ID,
+          start: 2,
+          end: 4,
+          style: 'some wrong style'
+        })
+      ).rejects.toEqual({
+        responseCode: httpCodes.notAcceptable
+      })
+    })
+
+    it('Should reject formatting when start is greater than end or equal to it', () => {
+      return expect(
+        notesStorage.format({
+          id: ID,
+          start: 10,
+          end: 4,
+          style: availableStyles.bold
+        })
+      ).rejects.toEqual({
+        responseCode: httpCodes.notAcceptable
       })
     })
 

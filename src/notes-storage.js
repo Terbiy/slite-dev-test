@@ -1,6 +1,8 @@
 'use strict'
 
+const { availableStyles } = require('../config.json').notesSettings
 const httpCodes = require('./http-codes.json')
+const { getNumberInInterval } = require('./utils.js')
 
 module.exports = {
   create,
@@ -48,9 +50,10 @@ function insert({ id, position = Number.MAX_SAFE_INTEGER, text } = {}) {
     const note = storage.get(id)
     const { text: originalText } = note
 
-    const relevantPosition = Math.max(
-      Math.min(position, originalText.length),
-      0
+    const relevantPosition = getNumberInInterval(
+      position,
+      0,
+      originalText.length
     )
 
     note.text =
@@ -103,6 +106,26 @@ function get({ id, contentType } = {}) {
 
 function format({ id, start, end, style }) {
   return new Promise((resolve, reject) => {
+    if (!id) {
+      return reject(buildError(httpCodes.notAcceptable))
+    }
+
+    if (!storage.has(id)) {
+      return reject(buildError(httpCodes.notFound))
+    }
+
+    if (!availableStyles.hasOwnProperty(style)) {
+      return reject(buildError(httpCodes.notAcceptable))
+    }
+
+    const { text } = storage.get(id)
+    const relevantStart = getNumberInInterval(start, 0, text.length)
+    const relevantEnd = getNumberInInterval(end, 0, text.length)
+
+    if (relevantStart >= relevantEnd) {
+      return reject(buildError(httpCodes.notAcceptable))
+    }
+
     resolve({
       responseCode: httpCodes.ok
     })
