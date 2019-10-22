@@ -1,6 +1,6 @@
 'use strict'
 
-const { availableContentTypes } = require('../config.json').queriesSettings
+const { availableContentTypes } = require('../config.json').notesSettings
 const notesStorage = require('./notes-storage.js')
 const httpCodes = require('./http-codes.json')
 

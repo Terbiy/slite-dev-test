@@ -7,6 +7,7 @@ module.exports = {
   insert,
   remove,
   get,
+  format,
   clear
 }
 
@@ -47,7 +48,10 @@ function insert({ id, position = Number.MAX_SAFE_INTEGER, text } = {}) {
     const note = storage.get(id)
     const { text: originalText } = note
 
-    const relevantPosition = Math.min(position, originalText.length)
+    const relevantPosition = Math.max(
+      Math.min(position, originalText.length),
+      0
+    )
 
     note.text =
       originalText.slice(0, relevantPosition) +
@@ -93,6 +97,14 @@ function get({ id, contentType } = {}) {
     resolve({
       responseCode: httpCodes.ok,
       note
+    })
+  })
+}
+
+function format({ id, start, end, style }) {
+  return new Promise((resolve, reject) => {
+    resolve({
+      responseCode: httpCodes.ok
     })
   })
 }

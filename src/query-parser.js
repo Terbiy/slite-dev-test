@@ -1,16 +1,16 @@
 'use strict'
 
-const {
-  separator,
-  defaultContentType
-} = require('../config.json').queriesSettings
+const { separator } = require('../config.json').queriesSettings
+const { defaultContentType } = require('../config.json').notesSettings
+const { parseDecimalInt } = require('./utils.js')
 
 module.exports = {
   parseCommand,
   parseCreation,
   parseInsertion,
   parseRemovement,
-  parseGetting
+  parseGetting,
+  parseFormatting
 }
 
 function parseCommand(query) {
@@ -28,7 +28,7 @@ function parseInsertion(query) {
     query
   )
 
-  let position = parseInt(positionOrText, 10)
+  let position = parseDecimalInt(positionOrText)
   let text = textCandidate
 
   if (!textCandidate || Number.isNaN(position)) {
@@ -56,6 +56,17 @@ function parseGetting(query) {
   return {
     id,
     contentType
+  }
+}
+
+function parseFormatting(query) {
+  const [, id = '', start, end, style = ''] = decomposeQuery(query)
+
+  return {
+    id,
+    start: parseDecimalInt(start) || 0,
+    end: parseDecimalInt(end) || 0,
+    style
   }
 }
 

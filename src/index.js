@@ -7,7 +7,8 @@ const {
   parseCreation,
   parseInsertion,
   parseRemovement,
-  parseGetting
+  parseGetting,
+  parseFormatting
 } = require('./query-parser.js')
 const notesStorage = require('./notes-storage.js')
 const httpCodes = require('./http-codes.json')
@@ -35,7 +36,8 @@ function handleIncommingQuery(query) {
       create,
       insert,
       delete: remove,
-      get
+      get,
+      format
     }[command] ||
     (() => Promise.reject({ responseCode: httpCodes.methodNotAllowed }))
 
@@ -68,6 +70,12 @@ function get(query) {
       responseValue: response.note.text
     }
   })
+}
+
+function format(query) {
+  const settings = parseFormatting(query)
+
+  return notesStorage.format(settings)
 }
 
 function setConnectionAndWriteResponseValueOrCode(connection) {

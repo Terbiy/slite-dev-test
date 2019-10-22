@@ -2,10 +2,16 @@
   "host": "localhost",
   "port": 1337,
   "queriesSettings": {
-    "separator": ":",
+    "separator": ":"
+  },
+  "notesSettings": {
     "defaultContentType": "txt",
     "availableContentTypes": {
       "txt": "txt"
+    },
+    "availableStyles": {
+      "bold": "bold",
+      "italic": "italic"
     }
   }
 }
