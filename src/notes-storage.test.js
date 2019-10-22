@@ -6,6 +6,7 @@ const {
 } = require('../config.json').notesSettings
 const notesStorage = require('./notes-storage.js')
 const httpCodes = require('./http-codes.json')
+const { Segment } = require('./segment.js')
 
 describe('Notes Storage tests', () => {
   describe('Creating notes', () => {
@@ -20,7 +21,8 @@ describe('Notes Storage tests', () => {
         responseCode: httpCodes.ok,
         note: {
           id: ID,
-          text: ''
+          text: '',
+          styles: notesStorage.populateStyles()
         }
       })
     })
@@ -183,7 +185,8 @@ describe('Notes Storage tests', () => {
       responseCode: httpCodes.ok,
       note: {
         id: ID,
-        text: ''
+        text: '',
+        styles: notesStorage.populateStyles()
       }
     }
 
@@ -230,7 +233,7 @@ describe('Notes Storage tests', () => {
   describe('Formatting notes', () => {
     const ID = 'some id'
 
-    beforeAll(() => {
+    beforeEach(() => {
       notesStorage
         .create({
           id: ID
@@ -241,6 +244,10 @@ describe('Notes Storage tests', () => {
             text: 'Here is some text I need to type to implement the test'
           })
         )
+    })
+
+    afterEach(() => {
+      return notesStorage.clear()
     })
 
     it('Should return 200 code when existing note is formatting with proper arguments', () => {
@@ -254,6 +261,24 @@ describe('Notes Storage tests', () => {
       ).resolves.toEqual({
         responseCode: httpCodes.ok
       })
+    })
+
+    it('Should save formatting in segments', () => {
+      const style = availableStyles.bold
+
+      return notesStorage
+        .format({
+          id: ID,
+          start: 2,
+          end: 8,
+          style
+        })
+        .then(() => notesStorage.get({ id: ID }))
+        .then(response => {
+          const { styles } = response.note
+
+          expect(styles[style].list).toEqual(new Segment(2, 8))
+        })
     })
 
     it('Should reject formatting node when no id is provided', () => {
@@ -305,10 +330,6 @@ describe('Notes Storage tests', () => {
       ).rejects.toEqual({
         responseCode: httpCodes.notAcceptable
       })
-    })
-
-    afterAll(() => {
-      return notesStorage.clear()
     })
   })
 })

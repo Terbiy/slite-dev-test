@@ -3,6 +3,7 @@
 const { availableStyles } = require('../config.json').notesSettings
 const httpCodes = require('./http-codes.json')
 const { getNumberInInterval } = require('./utils.js')
+const { SegmentsList } = require('./segments-list.js')
 
 module.exports = {
   create,
@@ -10,7 +11,8 @@ module.exports = {
   remove,
   get,
   format,
-  clear
+  clear,
+  populateStyles
 }
 
 /**
@@ -118,13 +120,15 @@ function format({ id, start, end, style }) {
       return reject(buildError(httpCodes.notAcceptable))
     }
 
-    const { text } = storage.get(id)
-    const relevantStart = getNumberInInterval(start, 0, text.length)
-    const relevantEnd = getNumberInInterval(end, 0, text.length)
+    const { length } = storage.get(id).text
+    const relevantStart = getNumberInInterval(start, 0, length)
+    const relevantEnd = getNumberInInterval(end, 0, length)
 
     if (relevantStart >= relevantEnd) {
       return reject(buildError(httpCodes.notAcceptable))
     }
+
+    storage.get(id).styles[style].addSegment(relevantStart, relevantEnd)
 
     resolve({
       responseCode: httpCodes.ok
@@ -141,10 +145,21 @@ function clear() {
 }
 
 function buildNote(id) {
+  const styles = populateStyles()
+
   return {
     id,
-    text: ''
+    text: '',
+    styles
   }
+}
+
+function populateStyles() {
+  return Object.keys(availableStyles).reduce((accumulated, style) => {
+    accumulated[style] = new SegmentsList()
+
+    return accumulated
+  }, {})
 }
 
 function buildError(responseCode) {
