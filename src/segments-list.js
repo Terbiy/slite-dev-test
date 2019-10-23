@@ -19,6 +19,21 @@ class SegmentsList {
     return this
   }
 
+  reduce(callback, initialValue) {
+    let intermediateValue = initialValue
+    let segment = this.list
+    let counter = 0
+
+    while (segment) {
+      intermediateValue = callback(intermediateValue, segment, counter)
+
+      segment = segment.next
+      counter++
+    }
+
+    return intermediateValue
+  }
+
   insertSegment(segment) {
     let previousSegment = null
     let currentSegment = this.list

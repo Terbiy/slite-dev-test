@@ -12,6 +12,49 @@ describe('List for keeping segments', () => {
     })
   })
 
+  describe('Iterating segments', () => {
+    let segmentsList = null
+
+    beforeEach(() => {
+      segmentsList = new SegmentsList()
+    })
+
+    it('Should iterate all segments', () => {
+      segmentsList
+        .addSegment(1, 2)
+        .addSegment(4, 6)
+        .addSegment(9, 10)
+        .addSegment(14, 16)
+
+      const counter = segmentsList.reduce(accumulator => ++accumulator, 0)
+
+      expect(counter).toBe(4)
+    })
+
+    it('Should iterate segments one by one', () => {
+      const points = [[1, 3], [44, 55], [100, 110]]
+
+      segmentsList
+        .addSegment(...points[0])
+        .addSegment(...points[1])
+        .addSegment(...points[2])
+
+      segmentsList.reduce((accumulator, segment, index) => {
+        const { start, end } = segment
+        const { start: otherStart, end: otherEnd } = new Segment(
+          ...points[index]
+        )
+
+        expect({ start, end }).toEqual({
+          start: otherStart,
+          end: otherEnd
+        })
+
+        return accumulator
+      }, null)
+    })
+  })
+
   describe('Segments adding', () => {
     let segmentsList = null
 

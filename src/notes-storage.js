@@ -1,6 +1,9 @@
 'use strict'
 
-const { availableStyles } = require('../config.json').notesSettings
+const {
+  defaultContentType,
+  availableStyles
+} = require('../config.json').notesSettings
 const httpCodes = require('./http-codes.json')
 const { getNumberInInterval } = require('./utils.js')
 const { SegmentsList } = require('./segments-list.js')
@@ -22,6 +25,11 @@ module.exports = {
  */
 const storage = new Map()
 
+const stylesSymbols = {
+  bold: '**',
+  italic: '*'
+}
+
 function create({ id } = {}) {
   return new Promise((resolve, reject) => {
     if (!id) {
@@ -34,7 +42,7 @@ function create({ id } = {}) {
 
     resolve({
       responseCode: httpCodes.ok,
-      note
+      note: prepareNote(id)
     })
   })
 }
@@ -87,7 +95,7 @@ function remove({ id } = {}) {
   })
 }
 
-function get({ id, contentType } = {}) {
+function get({ id, contentType = defaultContentType } = {}) {
   return new Promise((resolve, reject) => {
     if (!id) {
       return reject(buildError(httpCodes.notAcceptable))
@@ -97,13 +105,51 @@ function get({ id, contentType } = {}) {
       return reject(buildError(httpCodes.notFound))
     }
 
-    const note = storage.get(id)
-
     resolve({
       responseCode: httpCodes.ok,
-      note
+      note: prepareNote(id, contentType)
     })
   })
+}
+
+function prepareNote(id, contentType) {
+  const noteData = storage.get(id)
+
+  const prepareText =
+    {
+      txt: prepareTxt,
+      md: prepareMd
+    }[contentType] || prepareTxt
+
+  return {
+    text: prepareText(noteData, contentType)
+  }
+}
+
+function prepareTxt(noteData) {
+  return noteData.text
+}
+
+function prepareMd(noteData) {
+  let { text } = noteData
+
+  noteData.styles.forEach((style, name) => {
+    const styleSymbol = stylesSymbols[name]
+
+    text = style.reduce((text, segment) => {
+      const { start, end } = segment
+
+      return (
+        text.slice(0, start) +
+        styleSymbol +
+        text.slice(start, end) +
+        styleSymbol +
+        text.slice(end)
+      )
+    }, text)
+  })
+
+  return text
 }
 
 function format({ id, start, end, style }) {
@@ -128,7 +174,10 @@ function format({ id, start, end, style }) {
       return reject(buildError(httpCodes.notAcceptable))
     }
 
-    storage.get(id).styles[style].addSegment(relevantStart, relevantEnd)
+    storage
+      .get(id)
+      .styles.get(style)
+      .addSegment(relevantStart, relevantEnd)
 
     resolve({
       responseCode: httpCodes.ok
@@ -156,10 +205,10 @@ function buildNote(id) {
 
 function populateStyles() {
   return Object.keys(availableStyles).reduce((accumulated, style) => {
-    accumulated[style] = new SegmentsList()
+    accumulated.set(style, new SegmentsList())
 
     return accumulated
-  }, {})
+  }, new Map())
 }
 
 function buildError(responseCode) {

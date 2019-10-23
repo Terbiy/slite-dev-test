@@ -6,7 +6,6 @@ const {
 } = require('../config.json').notesSettings
 const notesStorage = require('./notes-storage.js')
 const httpCodes = require('./http-codes.json')
-const { Segment } = require('./segment.js')
 
 describe('Notes Storage tests', () => {
   describe('Creating notes', () => {
@@ -20,9 +19,7 @@ describe('Notes Storage tests', () => {
       ).resolves.toEqual({
         responseCode: httpCodes.ok,
         note: {
-          id: ID,
-          text: '',
-          styles: notesStorage.populateStyles()
+          text: ''
         }
       })
     })
@@ -181,19 +178,29 @@ describe('Notes Storage tests', () => {
 
   describe('Getting notes', () => {
     const ID = 'test234'
+    const TEXT = 'Here is some text prepared to make testing possible'
     const noteResponse = {
       responseCode: httpCodes.ok,
       note: {
-        id: ID,
-        text: '',
-        styles: notesStorage.populateStyles()
+        text: TEXT
       }
     }
 
-    beforeAll(() => {
-      return notesStorage.create({
-        id: ID
-      })
+    beforeEach(() => {
+      return notesStorage
+        .create({
+          id: ID
+        })
+        .then(() =>
+          notesStorage.insert({
+            id: ID,
+            text: TEXT
+          })
+        )
+    })
+
+    afterEach(() => {
+      return notesStorage.clear()
     })
 
     it('Should return existing note requested by id', () => {
@@ -203,6 +210,48 @@ describe('Notes Storage tests', () => {
           contentType: availableContentTypes.txt
         })
       ).resolves.toEqual(noteResponse)
+    })
+
+    it('Should return requested note formatted in italic', () => {
+      return notesStorage
+        .format({
+          id: ID,
+          start: 5,
+          end: 500,
+          style: availableStyles.italic
+        })
+        .then(() =>
+          notesStorage.get({
+            id: ID,
+            contentType: availableContentTypes.md
+          })
+        )
+        .then(({ note }) => {
+          expect(note.text).toBe(
+            'Here *is some text prepared to make testing possible*'
+          )
+        })
+    })
+
+    it('Should return requested note formatted in bold', () => {
+      return notesStorage
+        .format({
+          id: ID,
+          start: 5,
+          end: 500,
+          style: availableStyles.bold
+        })
+        .then(() =>
+          notesStorage.get({
+            id: ID,
+            contentType: availableContentTypes.md
+          })
+        )
+        .then(({ note }) => {
+          expect(note.text).toBe(
+            'Here **is some text prepared to make testing possible**'
+          )
+        })
     })
 
     it('Should stick to default content type when unavailable is provided', () => {
@@ -223,10 +272,6 @@ describe('Notes Storage tests', () => {
       ).rejects.toEqual({
         responseCode: httpCodes.notFound
       })
-    })
-
-    afterAll(() => {
-      return notesStorage.clear()
     })
   })
 
@@ -261,24 +306,6 @@ describe('Notes Storage tests', () => {
       ).resolves.toEqual({
         responseCode: httpCodes.ok
       })
-    })
-
-    it('Should save formatting in segments', () => {
-      const style = availableStyles.bold
-
-      return notesStorage
-        .format({
-          id: ID,
-          start: 2,
-          end: 8,
-          style
-        })
-        .then(() => notesStorage.get({ id: ID }))
-        .then(response => {
-          const { styles } = response.note
-
-          expect(styles[style].list).toEqual(new Segment(2, 8))
-        })
     })
 
     it('Should reject formatting node when no id is provided', () => {
