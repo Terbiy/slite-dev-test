@@ -4,6 +4,16 @@ const { getNumberInInterval } = require('./utils.js')
 const { TextPart } = require('./text-part.js')
 
 class PartitionedTexts extends Array {
+  prepareTxt() {
+    return this.reduce((accumulated, textPart) => accumulated + textPart, '')
+  }
+
+  prepareMd() {
+    return this.reduce((accumulated, textPart) => {
+      return accumulated + textPart.toStyledString()
+    }, '')
+  }
+
   insert(text, position = Number.MAX_SAFE_INTEGER) {
     let relativePosition = getNumberInInterval(
       position,

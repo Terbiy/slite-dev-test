@@ -38,8 +38,18 @@ describe('Collection of partitioned texts', () => {
           .insert('World', 5)
           .insert(' ', 5)
           .insert('!', 11)
-          .reduce((accumulated, text) => accumulated + text, '')
+          .prepareTxt()
       ).toBe('Hello World!')
+    })
+
+    it('Should treat the formatting right when inserting the text', () => {
+      expect(
+        partitionedTexts
+          .insert(' World')
+          .format(1, 6, availableStyles.bold)
+          .insert('Hello', 0)
+          .prepareMd()
+      ).toBe('Hello **World**')
     })
   })
 

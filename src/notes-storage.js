@@ -110,16 +110,11 @@ function prepareNote(id, contentType) {
 }
 
 function prepareTxt(noteData) {
-  return noteData.text.reduce(
-    (accumulated, textPart) => accumulated + textPart,
-    ''
-  )
+  return noteData.text.prepareTxt()
 }
 
 function prepareMd(noteData) {
-  return noteData.text.reduce((accumulated, textPart) => {
-    return accumulated + textPart.toStyledString()
-  }, '')
+  return noteData.text.prepareMd()
 }
 
 function format({ id, start, end, style }) {

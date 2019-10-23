@@ -37,7 +37,8 @@ function handleIncommingQuery(query) {
       insert,
       delete: remove,
       get,
-      format
+      format,
+      help
     }[command] ||
     (() => Promise.reject({ responseCode: httpCodes.methodNotAllowed }))
 
@@ -69,6 +70,26 @@ function get(query) {
     return {
       responseValue: response.note.text
     }
+  })
+}
+
+function help() {
+  return Promise.resolve({
+    responseValue:
+      '===================================\r\n' +
+      '=== Welcome to Slite CLI - 1986 ===\r\n' +
+      '===================================\r\n' +
+      '\r\n' +
+      'Examples of commands:\r\n' +
+      '* Create a doc: `create:doca`\r\n' +
+      '* Insert content: `insert:doca:0:Hello`\r\n' +
+      '* Insert content at the end: `insert:doca: world!`\r\n' +
+      '* Toggle format at position: `format:doca:0:5:bold`\r\n' +
+      '* Get doc in txt or md: `get:doca:txt`\r\n' +
+      '* Delete content: `delete:doca`\r\n' +
+      '\r\n' +
+      'Your turn ✨\r\n' +
+      '==================================='
   })
 }
 
