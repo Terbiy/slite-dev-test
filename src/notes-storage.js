@@ -5,8 +5,7 @@ const {
   availableStyles
 } = require('../config.json').notesSettings
 const httpCodes = require('./http-codes.json')
-const { getNumberInInterval } = require('./utils.js')
-const { SegmentsList } = require('./segments-list.js')
+const { PartitionedTexts } = require('./partitioned-texts.js')
 
 module.exports = {
   create,
@@ -14,8 +13,7 @@ module.exports = {
   remove,
   get,
   format,
-  clear,
-  populateStyles
+  clear
 }
 
 /**
@@ -24,11 +22,6 @@ module.exports = {
  * the API of the current look like an asynchronous one.
  */
 const storage = new Map()
-
-const stylesSymbols = {
-  bold: '**',
-  italic: '*'
-}
 
 function create({ id } = {}) {
   return new Promise((resolve, reject) => {
@@ -57,19 +50,7 @@ function insert({ id, position = Number.MAX_SAFE_INTEGER, text } = {}) {
       return reject(buildError(httpCodes.notFound))
     }
 
-    const note = storage.get(id)
-    const { text: originalText } = note
-
-    const relevantPosition = getNumberInInterval(
-      position,
-      0,
-      originalText.length
-    )
-
-    note.text =
-      originalText.slice(0, relevantPosition) +
-      text +
-      originalText.slice(relevantPosition)
+    storage.get(id).text.insert(text, position)
 
     resolve({
       responseCode: httpCodes.ok
@@ -105,9 +86,11 @@ function get({ id, contentType = defaultContentType } = {}) {
       return reject(buildError(httpCodes.notFound))
     }
 
+    const note = prepareNote(id, contentType)
+
     resolve({
       responseCode: httpCodes.ok,
-      note: prepareNote(id, contentType)
+      note
     })
   })
 }
@@ -127,29 +110,16 @@ function prepareNote(id, contentType) {
 }
 
 function prepareTxt(noteData) {
-  return noteData.text
+  return noteData.text.reduce(
+    (accumulated, textPart) => accumulated + textPart,
+    ''
+  )
 }
 
 function prepareMd(noteData) {
-  let { text } = noteData
-
-  noteData.styles.forEach((style, name) => {
-    const styleSymbol = stylesSymbols[name]
-
-    text = style.reduce((text, segment) => {
-      const { start, end } = segment
-
-      return (
-        text.slice(0, start) +
-        styleSymbol +
-        text.slice(start, end) +
-        styleSymbol +
-        text.slice(end)
-      )
-    }, text)
-  })
-
-  return text
+  return noteData.text.reduce((accumulated, textPart) => {
+    return accumulated + textPart.toStyledString()
+  }, '')
 }
 
 function format({ id, start, end, style }) {
@@ -166,18 +136,11 @@ function format({ id, start, end, style }) {
       return reject(buildError(httpCodes.notAcceptable))
     }
 
-    const { length } = storage.get(id).text
-    const relevantStart = getNumberInInterval(start, 0, length)
-    const relevantEnd = getNumberInInterval(end, 0, length)
-
-    if (relevantStart >= relevantEnd) {
+    try {
+      storage.get(id).text.format(start, end, style)
+    } catch (err) {
       return reject(buildError(httpCodes.notAcceptable))
     }
-
-    storage
-      .get(id)
-      .styles.get(style)
-      .addSegment(relevantStart, relevantEnd)
 
     resolve({
       responseCode: httpCodes.ok
@@ -194,21 +157,10 @@ function clear() {
 }
 
 function buildNote(id) {
-  const styles = populateStyles()
-
   return {
     id,
-    text: '',
-    styles
+    text: new PartitionedTexts()
   }
-}
-
-function populateStyles() {
-  return Object.keys(availableStyles).reduce((accumulated, style) => {
-    accumulated.set(style, new SegmentsList())
-
-    return accumulated
-  }, new Map())
 }
 
 function buildError(responseCode) {
