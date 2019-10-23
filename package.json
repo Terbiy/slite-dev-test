@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "description": "Slite test for new developers",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=10.0.0"
+  },
   "directories": {
     "test": "test"
   },
   "scripts": {
     "start": "node src/index.js",
+    "unit-test": "jest ./src/.*test.js",
     "test": "jest ./test.js"
   },
   "keywords": [
@@ -19,5 +23,76 @@
   "license": "ISC",
   "dependencies": {
     "jest": "^23.1.0"
+  },
+  "devDependencies": {
+    "@pob/eslint-config": "^32.1.0",
+    "@pob/eslint-config-node": "^32.1.0",
+    "eslint": "^6.5.1",
+    "eslint-config-prettier": "^6.4.0",
+    "eslint-plugin-jest": "^22.19.0",
+    "husky": "^3.0.9",
+    "lint-staged": "^9.4.2",
+    "prettier": "1.18.2"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
+  "eslintConfig": {
+    "extends": [
+      "@pob/eslint-config",
+      "@pob/eslint-config-node",
+      "plugin:jest/recommended",
+      "plugin:jest/style",
+      "prettier"
+    ],
+    "plugins": [
+      "jest"
+    ],
+    "overrides": [
+      {
+        "files": "./src/**.js",
+        "rules": {
+          "no-use-before-define": [
+            "error",
+            {
+              "functions": false
+            }
+          ],
+          "max-lines": [
+            "error",
+            300
+          ],
+          "prefer-promise-reject-errors": "off",
+          "no-prototype-builtins": "off"
+        }
+      },
+      {
+        "files": "./src/**.test.js",
+        "rules": {
+          "max-lines": "off"
+        }
+      }
+    ],
+    "env": {
+      "jest/globals": true
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{json,md}": [
+      "prettier --write",
+      "git add"
+    ],
+    "./src/**.js": [
+      "jest --findRelatedTests",
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ]
   }
 }

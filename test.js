@@ -1,7 +1,6 @@
 const net = require('net')
 
-const HOST = 'localhost'
-const PORT = 1337
+const { host, port } = require('./config.json')
 
 function generateDocId() {
   return `doc${Math.floor(Math.random() * 1000)}`
@@ -10,7 +9,7 @@ function generateDocId() {
 function runCommand(command) {
   return new Promise((resolve) => {
     const client = new net.Socket()
-    client.connect(PORT, HOST, function () {
+    client.connect(port, host, function () {
       client.on('data', function (data) {
         resolve(data.toString('utf8'))
         client.end()
@@ -109,7 +108,7 @@ describe('Slite 1986 Test', function () {
       await runCommand(`insert:${docId}:5: World!`)
 
       const respmd = await runCommand(`get:${docId}:md`)
-      expect(respmd).toEqual('*Hello* World!\n\r\n')
+      expect(respmd).toEqual('*Hello* World!\r\n')
 
       const resptxt = await runCommand(`get:${docId}:txt`)
       expect(resptxt).toEqual('Hello World!\r\n')
